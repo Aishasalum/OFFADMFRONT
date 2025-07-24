@@ -1,0 +1,79 @@
+.admin-sidebar {
+  width: 220px;
+  height: 100vh;
+  background-color: #4e73df; /* Match navbar color */
+  color: white;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-title {
+  font-size: 22px;
+  margin-bottom: 30px;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-links li {
+  margin-bottom: 15px;
+}
+
+.sidebar-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  display: block;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.sidebar-links a:hover,
+.sidebar-links .active-link {
+  background-color: #2e59d9;
+  transform: translateX(4px);
+}
+
+
+
+
+
+
+
+
+
+
+
+.logout-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.logout-button:hover {
+  background-color: #c0392b;
+}
+
+
+
+
+
+

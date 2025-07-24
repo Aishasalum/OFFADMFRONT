@@ -1,0 +1,97 @@
+.admin-dashboard {
+  padding: 2rem;
+  background-color: #f8f9fc;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.dashboard-title {
+  font-size: 28px;
+  color: #4e73df;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+/* Stat Cards Section */
+.stat-cards {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  min-width: 260px;
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-icon {
+  font-size: 36px;
+  margin-right: 1rem;
+}
+
+.stat-card h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #555;
+}
+
+.stat-card p {
+  margin: 4px 0 0;
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Color Themes */
+.stat-card.blue .stat-icon {
+  color: #4e73df;
+}
+.stat-card.green .stat-icon {
+  color: #1cc88a;
+}
+.stat-card.purple .stat-icon {
+  color: #6f42c1;
+}
+
+/* Charts Section */
+.dashboard-charts {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.chart-section {
+  flex: 1;
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.chart-section h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #343a40;
+}
+
+.pie-chart {
+  max-width: 45%;
+  min-width: 320px;
+}
+
+.bar-chart {
+  flex: 1;
+  min-width: 320px;
+}

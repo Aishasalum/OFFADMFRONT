@@ -1,0 +1,27 @@
+.admin-navbar {
+  width: 100%;
+  background-color: #4e73df;
+  color: white;
+  padding: 10px 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.admin-icon {
+  font-size: 28px;
+  color: white;
+}
+
+.admin-welcome {
+  font-size: 18px;
+  font-weight: bold;
+  white-space: nowrap;
+}

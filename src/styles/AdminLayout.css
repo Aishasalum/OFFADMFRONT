@@ -1,0 +1,19 @@
+.admin-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+.admin-main {
+  margin-left: 220px; /* same as sidebar width */
+  width: calc(100% - 220px);
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-content {
+  padding: 20px;
+  background-color: #f3f4f6;
+  flex-grow: 1;
+  overflow-y: auto;
+}

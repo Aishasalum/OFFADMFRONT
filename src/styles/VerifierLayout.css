@@ -1,0 +1,16 @@
+.verifier-layout {
+  display: flex;
+}
+
+.verifier-main {
+  margin-left: 220px;
+  width: calc(100% - 220px);
+  display: flex;
+  flex-direction: column;
+}
+
+.verifier-content {
+  padding: 20px;
+  background-color: #f1f5f9; /* Gray-100 */
+  min-height: 100vh;
+}

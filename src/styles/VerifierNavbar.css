@@ -1,0 +1,8 @@
+.verifier-navbar {
+  background-color: #1e3a8a; /* Blue-800 */
+  padding: 16px 24px;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
