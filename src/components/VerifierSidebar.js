@@ -12,9 +12,10 @@ const VerifierSidebar = () => {
         <NavLink to="/verifier/uploaded-certificates" activeClassName="active">Uploaded Certificates</NavLink>
         <NavLink to="/verifier/birth-records" activeClassName="active">Certificate Records</NavLink>
         <NavLink to="/verifier/payments" activeClassName="active">Payments</NavLink>
-        <NavLink to="/verifier/pending" activeClassName="active">Pending</NavLink>
+        {/* <NavLink to="/verifier/pending" activeClassName="active">Pending</NavLink> */}
         <NavLink to="/verifier/verified" activeClassName="active">Verified</NavLink>
         <NavLink to="/verifier/rejected" activeClassName="active">Rejected</NavLink>
+        <NavLink to="/verifier/generate-report" activeClassName="active">Generate Report</NavLink>
         <NavLink to="/" activeClassName="active">Logout</NavLink>
       </nav>
     </div>

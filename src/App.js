@@ -24,6 +24,11 @@ import UserRequests from './pages/admin/UserRequests';
 import AdminUploadedCertificates from './pages/admin/UploadedCertificates';
 import RecycleBin from './pages/admin/bin/RecycleBin';
 import RegisterNewBorn from './pages/admin/RegisterNewBorn';
+import ResetPassword from './pages/ResetPassword';
+import ForgotPassword from './pages/ForgotPassword';
+import ContactAdmin from './pages/ContactAdmin';
+import GenerateReport from './pages/verifier/GenerateReport';
+import AdminReportsPage from './pages/admin/AdminReportsPage';
 
 function App() {
   return (
@@ -34,6 +39,9 @@ function App() {
         <Route path="/" element={<Login />} />
 
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/contact-admin" element={<ContactAdmin />} />
 
         {/* Verifier Officer Dashboard routes */}
         <Route path="/verifier" element={<VerifierLayout />}>
@@ -45,6 +53,7 @@ function App() {
           <Route path="pending" element={<PendingCertificates />} />
           <Route path="verified" element={<VerifiedCertificates />} />
           <Route path="rejected" element={<RejectedCertificates />} />
+          <Route path="generate-report" element={<GenerateReport />} />
           <Route path="settings" element={<Settings />} />
         </Route>
 
@@ -56,8 +65,9 @@ function App() {
           <Route path="payments" element={<AdminPayments />} />
           <Route path="user-requests" element={<UserRequests />} />
           <Route path="uploaded-certificates" element={<AdminUploadedCertificates />} />
-          <Route path='bin/Recyclebin' element={<RecycleBin />} />
+          <Route path='bin/recyclebin' element={<RecycleBin />} />
           <Route path='register-born' element={<RegisterNewBorn />} />
+          <Route path='reports' element={<AdminReportsPage />} />
         </Route>
         {/* === END OF ADMIN DASHBOARD ROUTES === */}
       </Routes>

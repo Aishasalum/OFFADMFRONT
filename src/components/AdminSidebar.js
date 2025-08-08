@@ -47,6 +47,7 @@ const AdminSidebar = () => {
         <li><NavLink to="/admin/uploaded-certificates" activeClassName="active-link">Uploaded Certificates</NavLink></li>
         <li><NavLink to="/admin/bin/recyclebin" activeClassName="active-link">Recycle Bin</NavLink></li>
         <li><NavLink to="/admin/register-born" activeClassName="active-link">RegisterNewBorn</NavLink></li>
+        <li><NavLink to="/admin/reports" activeClassName="active-link">Verification Reports</NavLink></li>
         {/* 🔴 Log Out Button */}
         <li>
           <button onClick={handleLogout} className="logout-button">Log Out</button>

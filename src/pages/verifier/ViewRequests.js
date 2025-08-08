@@ -538,13 +538,6 @@
 // export default VerificationManagement;
 
 
-
-
-
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
@@ -552,12 +545,13 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
   Chip, Typography, Box, Grid, CircularProgress, TablePagination,
   DialogContentText, Snackbar, Alert, Avatar, Badge, Tooltip,
-  Collapse
+  Collapse, List, ListItem, ListItemText
 } from '@mui/material';
 import {
   Search, FilterList, CheckCircle, Cancel, Refresh,
   Verified, Dangerous, Mail, Sms, ArrowUpward, ArrowDownward,
-  Person, Description, Visibility, ExpandMore, ExpandLess
+  Person, Description, Visibility, ExpandMore, ExpandLess,
+  Warning, Info, DoneAll, Phone, Email
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -572,7 +566,8 @@ const statusColors = {
 const matchColors = {
   MATCHED: 'success',
   NOT_MATCHED: 'error',
-  PENDING: 'warning'
+  PENDING: 'warning',
+  NOT_FOUND: 'error'
 };
 
 const VerificationManagement = () => {
@@ -595,6 +590,9 @@ const VerificationManagement = () => {
     severity: 'success'
   });
   const [expandedRequest, setExpandedRequest] = useState(null);
+  const [rejectionReasons, setRejectionReasons] = useState([]);
+  const [userContactInfo, setUserContactInfo] = useState({ email: '', phone: '' });
+  const [additionalComments, setAdditionalComments] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -608,10 +606,15 @@ const VerificationManagement = () => {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const response = await fetch(API_BASE_URL + '/all');
+      const response = await fetch(API_BASE_URL + '/active');
       if (!response.ok) throw new Error('Failed to fetch requests');
       const data = await response.json();
-      setRequests(data);
+      const processedData = data.map(request => ({
+        ...request,
+        matchResult: request.matchResult || 
+                    (request.recordId ? 'MATCHED' : 'NOT_FOUND')
+      }));
+      setRequests(processedData);
     } catch (error) {
       console.error('Error fetching requests:', error);
       showSnackbar('Failed to fetch requests', 'error');
@@ -620,10 +623,34 @@ const VerificationManagement = () => {
     }
   };
 
+  const fetchUserContactInfo = async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/${userId}/contact`);
+      if (!response.ok) throw new Error('Failed to fetch user contact info');
+      const data = await response.json();
+      setUserContactInfo({
+        email: data.email || 'Not available',
+        phone: data.phone || 'Not available'
+      });
+    } catch (error) {
+      console.error('Error fetching user contact info:', error);
+      setUserContactInfo({
+        email: 'Not available',
+        phone: 'Not available'
+      });
+    }
+  };
+
+  const getMismatchDetails = (request) => {
+    if (!request.mismatchDetails) return [];
+    if (Array.isArray(request.mismatchDetails)) return request.mismatchDetails;
+    if (typeof request.mismatchDetails === 'string') return [request.mismatchDetails];
+    return [];
+  };
+
   const filterAndSortRequests = () => {
     let result = [...requests];
 
-    // Apply search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(request => 
@@ -636,17 +663,14 @@ const VerificationManagement = () => {
       );
     }
 
-    // Apply status filter
     if (statusFilter !== 'ALL') {
       result = result.filter(request => request.status === statusFilter);
     }
 
-    // Apply match filter
     if (matchFilter !== 'ALL') {
       result = result.filter(request => request.matchResult === matchFilter);
     }
 
-    // Apply sorting
     if (sortConfig.key) {
       result.sort((a, b) => {
         const aValue = getNestedValue(a, sortConfig.key);
@@ -699,9 +723,14 @@ const VerificationManagement = () => {
     setPage(0);
   };
 
-  const handleActionClick = (request, type) => {
+  const handleActionClick = async (request, type) => {
     setCurrentRequest(request);
     setActionType(type);
+    setRejectionReasons(getMismatchDetails(request));
+    setAdditionalComments('');
+    if (request.user?.id) {
+      await fetchUserContactInfo(request.user.id);
+    }
     setActionDialogOpen(true);
   };
 
@@ -709,13 +738,18 @@ const VerificationManagement = () => {
     if (!currentRequest) return;
     
     try {
+      const allNotes = [
+        ...rejectionReasons,
+        additionalComments
+      ].filter(note => note && note.trim() !== '').join('\n');
+
       const response = await fetch(`${API_BASE_URL}/${currentRequest.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: actionType,
           notifyVia: notificationMethod,
-          notes: ''
+          notes: allNotes
         }),
       });
 
@@ -735,6 +769,8 @@ const VerificationManagement = () => {
     setActionDialogOpen(false);
     setCurrentRequest(null);
     setActionType(null);
+    setRejectionReasons([]);
+    setAdditionalComments('');
   };
 
   const handleViewBirthRecord = (recordId) => {
@@ -761,6 +797,114 @@ const VerificationManagement = () => {
     } catch {
       return dateString;
     }
+  };
+
+  const renderMatchResult = (request) => {
+    const details = getMismatchDetails(request);
+    const matchResult = request.matchResult || 'PENDING';
+    const isMatched = matchResult === 'MATCHED';
+    const isNotFound = matchResult === 'NOT_FOUND';
+
+    if (isMatched) {
+      return (
+        <Tooltip title="All details matched successfully">
+          <Chip
+            label="MATCHED"
+            color="success"
+            icon={<DoneAll />}
+          />
+        </Tooltip>
+      );
+    }
+
+    if (isNotFound) {
+      return (
+        <Tooltip title="Certificate not found in the system">
+          <Chip
+            label="NOT FOUND"
+            color="error"
+            icon={<Dangerous />}
+          />
+        </Tooltip>
+      );
+    }
+
+    return (
+      <Tooltip 
+        title={
+          <List dense>
+            {details.map((detail, index) => (
+              <ListItem key={index}>
+                <ListItemText primary={detail} />
+              </ListItem>
+            ))}
+          </List>
+        }
+        arrow
+        placement="top"
+      >
+        <Chip
+          label={details.length > 0 ? "NOT MATCHED" : matchResult}
+          color={details.length > 0 ? 'error' : matchColors[matchResult] || 'default'}
+          icon={details.length > 0 ? <Warning /> : null}
+        />
+      </Tooltip>
+    );
+  };
+
+  const renderExpandedMismatchDetails = (request) => {
+    const details = getMismatchDetails(request);
+    const matchResult = request.matchResult || 'PENDING';
+    const isNotFound = matchResult === 'NOT_FOUND';
+
+    if (isNotFound) {
+      return (
+        <Grid item xs={12}>
+          <Box sx={{ 
+            p: 2, 
+            backgroundColor: '#ffeeee', 
+            borderRadius: 1,
+            borderLeft: '4px solid #ff5252'
+          }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+              <Dangerous color="error" sx={{ verticalAlign: 'middle', mr: 1 }} />
+              Verification Result
+            </Typography>
+            <Typography color="error.main">
+              This certificate was not found in the system. Please verify the certificate number.
+            </Typography>
+          </Box>
+        </Grid>
+      );
+    }
+
+    if (details.length === 0) return null;
+
+    return (
+      <Grid item xs={12}>
+        <Box sx={{ 
+          p: 2, 
+          backgroundColor: '#ffeeee', 
+          borderRadius: 1,
+          borderLeft: '4px solid #ff5252'
+        }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+            <Warning color="error" sx={{ verticalAlign: 'middle', mr: 1 }} />
+            Mismatch Details
+          </Typography>
+          <List dense>
+            {details.map((detail, index) => (
+              <ListItem key={index} sx={{ py: 0 }}>
+                <ListItemText 
+                  primary={detail}
+                  primaryTypographyProps={{ color: 'error.main' }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Grid>
+    );
   };
 
   return (
@@ -816,6 +960,7 @@ const VerificationManagement = () => {
               <MenuItem value="ALL">All Results</MenuItem>
               <MenuItem value="MATCHED">Matched</MenuItem>
               <MenuItem value="NOT_MATCHED">Not Matched</MenuItem>
+              <MenuItem value="NOT_FOUND">Not Found</MenuItem>
               <MenuItem value="PENDING">Pending</MenuItem>
             </Select>
           </FormControl>
@@ -850,23 +995,21 @@ const VerificationManagement = () => {
           <CircularProgress />
         </Box>
       ) : (
-        <>
-          <TableContainer component={Paper} elevation={3}>
-            <Table sx={{ minWidth: 650 }} aria-label="verification requests table">
-              <TableHead sx={{ backgroundColor: 'primary.main' }}>
-                <TableRow>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>User</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Certificate #</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Child Name</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Date of Birth</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Gender</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Match Result</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Request Date</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Actions</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }} width="10px"></TableCell>
-                </TableRow>
-              </TableHead>
+        <> <TableContainer component={Paper} sx={{ mb: 2 }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>User</TableCell>
+                          <TableCell>Certificate #</TableCell>
+                          <TableCell>Child Name</TableCell>
+                          <TableCell>Date of Birth</TableCell>
+                          <TableCell>Gender</TableCell>
+                          <TableCell>Status</TableCell>
+                          <TableCell>Match Result</TableCell>
+                          <TableCell>Request Datw</TableCell>
+                          <TableCell align="center">Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
               <TableBody>
                 {filteredRequests.length > 0 ? (
                   filteredRequests
@@ -894,10 +1037,7 @@ const VerificationManagement = () => {
                             />
                           </TableCell>
                           <TableCell>
-                            <Chip
-                              label={request.matchResult || 'PENDING'}
-                              color={matchColors[request.matchResult] || 'default'}
-                            />
+                            {renderMatchResult(request)}
                           </TableCell>
                           <TableCell>{formatDate(request.createdAt)}</TableCell>
                           <TableCell align="center">
@@ -966,6 +1106,8 @@ const VerificationManagement = () => {
                                   <Grid item xs={12} md={4}>
                                     <Typography variant="subtitle1"><strong>Informant Name:</strong> {request.informantName || 'N/A'}</Typography>
                                   </Grid>
+                                  
+                                  {renderExpandedMismatchDetails(request)}
                                 </Grid>
                               </Box>
                             </Collapse>
@@ -1000,7 +1142,6 @@ const VerificationManagement = () => {
         </>
       )}
 
-      {/* Action Confirmation Dialog */}
       <Dialog open={actionDialogOpen} onClose={handleActionCancel} maxWidth="sm" fullWidth>
         <DialogTitle>
           {actionType === 'VERIFIED' ? 'Verify Request' : 'Reject Request'}
@@ -1019,6 +1160,67 @@ const VerificationManagement = () => {
             <Typography><strong>Mother:</strong> {currentRequest?.motherName || 'N/A'}</Typography>
             <Typography><strong>Match Status:</strong> {currentRequest?.matchResult || 'PENDING'}</Typography>
           </Box>
+
+          <Box sx={{ mb: 2, p: 2, backgroundColor: '#e3f2fd', borderRadius: 1 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+              <Person color="info" sx={{ verticalAlign: 'middle', mr: 1 }} />
+              User Contact Information
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Email color="action" />
+                  <Typography><strong>Email:</strong> {userContactInfo.email}</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Phone color="action" />
+                  <Typography><strong>Phone:</strong> {userContactInfo.phone}</Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {actionType === 'REJECTED' && rejectionReasons.length > 0 && (
+            <Box sx={{ mb: 2, p: 2, backgroundColor: '#fff8e1', borderRadius: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                <Warning color="warning" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                Mismatch Reasons
+              </Typography>
+              <List dense>
+                {rejectionReasons.map((reason, index) => (
+                  <ListItem key={index}>
+                    <ListItemText primary={reason} />
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          )}
+
+          {actionType === 'REJECTED' && currentRequest?.matchResult === 'NOT_FOUND' && (
+            <Box sx={{ mb: 2, p: 2, backgroundColor: '#fff8e1', borderRadius: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                <Dangerous color="error" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                Certificate Not Found
+              </Typography>
+              <Typography color="error.main">
+                This certificate was not found in the system. Please verify the certificate number.
+              </Typography>
+            </Box>
+          )}
+
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Additional Comments"
+            placeholder="Enter any additional comments for the user..."
+            variant="outlined"
+            sx={{ mt: 2 }}
+            value={additionalComments}
+            onChange={(e) => setAdditionalComments(e.target.value)}
+          />
 
           <FormControl fullWidth sx={{ mt: 2 }}>
             <InputLabel>Notification Method</InputLabel>
@@ -1059,7 +1261,6 @@ const VerificationManagement = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
