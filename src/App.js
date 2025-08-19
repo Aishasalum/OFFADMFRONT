@@ -29,6 +29,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ContactAdmin from './pages/ContactAdmin';
 import GenerateReport from './pages/verifier/GenerateReport';
 import AdminReportsPage from './pages/admin/AdminReportsPage';
+import LateRegistration from './pages/admin/LateRegistration';
 
 function App() {
   return (
@@ -67,6 +68,7 @@ function App() {
           <Route path="uploaded-certificates" element={<AdminUploadedCertificates />} />
           <Route path='bin/recyclebin' element={<RecycleBin />} />
           <Route path='register-born' element={<RegisterNewBorn />} />
+          <Route path='lateregistration' element={<LateRegistration />} />
           <Route path='reports' element={<AdminReportsPage />} />
         </Route>
         {/* === END OF ADMIN DASHBOARD ROUTES === */}
